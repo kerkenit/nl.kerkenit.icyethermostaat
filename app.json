@@ -1,13 +1,13 @@
 {
 	"id": "homey.icyethermostaat",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"compatibility": "*",
 	"name": {
-		"en": "ICY E-Thermostaat",
+		"en": "ICY E-Thermostat",
 		"nl": "ICY E-Thermostaat"
 	},
 	"description": {
-		"en": "The ICY E-Thermostaat",
+		"en": "The ICY E-Thermostat",
 		"nl": "De ICY E-Thermostaat"
 	},
 	"author": {
@@ -22,8 +22,8 @@
 		{
 			"id": "thermostat",
 			"name": {
-				"en": "ICY E-Thermostaat",
-				"en": "ICY E-Thermostaat"
+				"en": "ICY E-Thermostat",
+				"nl": "ICY E-Thermostaat"
 			},
 			"class": "thermostat",
 			"capabilities": [ "target_temperature", "measure_temperature" ],

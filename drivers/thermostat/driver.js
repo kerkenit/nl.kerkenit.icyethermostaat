@@ -6,12 +6,29 @@ var api_url = 'https://portal.icy.nl';
 var self = module.exports = {
 	init: function(devices, callback) {
 		// we're ready
+		devices.forEach(function(device_data) {
+			Homey.manager('cron').unregisterTask(device_data.id, function(err, success) {
+				if (err) { Homey.log(err); }
+			});
+			Homey.manager('cron').registerTask(device_data.id, '* * * * *', device_data, function(err, task) {
+				if (err) {
+					Homey.log(err);
+				}
+			});
+			Homey.manager('cron').on(device_data.id, function(device) {
+				getThermostatInfo(device, true, function(err, info) {
+					if (err) {
+						Homey.log(err);
+					}
+				});
+			});
+		});
 		callback();
 	},
 	capabilities: {
 		target_temperature: {
 			get: function(device, callback) {
-				getThermostatInfo(device, function(err, info) {
+				getThermostatInfo(device, true, function(err, info) {
 					callback(err, info.temperature1);
 				});
 			},
@@ -109,7 +126,7 @@ function getThermostatInfo(device, force, callback) {
 	// Send log
 	Homey.log('ICY E-Thermostaat checking data');
 	// Check if cache is within time range
-	if (!force && ((new Date) - thermostatInfoCache.updated_at) < 1000 * 60 * 2) {
+	if (!force && ((new Date) - thermostatInfoCache.updated_at) < 120000) {
 		// Cache is younger then 2 minutes, serve cache instead of live data.
 		callback(thermostatInfoCache.data);
 	} else {
@@ -132,8 +149,8 @@ function getThermostatInfo(device, force, callback) {
 					thermostatInfoCache.updated_at = new Date();
 					thermostatInfoCache.data = body;
 					// Set the new temperature
-					self.realtime(device, 'measure_temperature', thermostatInfoCache.data.temperature2);
 					self.realtime(device, 'target_temperature', thermostatInfoCache.data.temperature1);
+					self.realtime(device, 'measure_temperature', thermostatInfoCache.data.temperature2);
 					// Return new data
 					callback(null, thermostatInfoCache.data);
 				});
@@ -185,6 +202,8 @@ function getToken(device, callback) {
 				Homey.log('ICY E-Thermostaat username/password are correct, returning token.');
 				// Return token
 				callback(body.token);
+			} else {
+				callback(false);
 			}
 		} else {
 			module.exports.setUnavailable(device, "ICY E-Thermostaat Webservice Offline.");
