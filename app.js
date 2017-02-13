@@ -4,5 +4,5 @@
 }());
 
 module.exports.init = function(){
-    Homey.log("E-hermostaat - init start");
+    Homey.log("E-thermostaat - init start");
 }
