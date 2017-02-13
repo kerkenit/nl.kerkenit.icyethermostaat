@@ -1,6 +1,6 @@
 {
 	"id": "homey.icyethermostaat",
-	"version": "0.0.5",
+	"version": "0.6.0",
 	"compatibility": "*",
 	"name": {
 		"en": "ICY E-Thermostaat",

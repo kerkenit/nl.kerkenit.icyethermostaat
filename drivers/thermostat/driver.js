@@ -1,14 +1,20 @@
-"use strict";
+/* global Homey, module */
+(function() {
+	'use strict';
+}());
 var path = require('path');
 var request = require('request');
 var extend = require('extend');
 var api_url = 'https://portal.icy.nl';
+
 var self = module.exports = {
 	init: function(devices, callback) {
 		// we're ready
 		devices.forEach(function(device_data) {
 			Homey.manager('cron').unregisterTask(device_data.id, function(err, success) {
-				if (err) { Homey.log(err); }
+				if (err) {
+					Homey.log(err);
+				}
 			});
 			Homey.manager('cron').registerTask(device_data.id, '* * * * *', device_data, function(err, task) {
 				if (err) {
@@ -29,12 +35,18 @@ var self = module.exports = {
 		target_temperature: {
 			get: function(device, callback) {
 				getThermostatInfo(device, true, function(err, info) {
-					callback(err, info.temperature1);
+					if(info !== undefined && info.temperature1 !== undefined) {
+						callback(err, info.temperature1);
+					}
 				});
 			},
 			set: function(device, target_temperature, callback) {
-				if (target_temperature < 5) target_temperature = 5;
-				if (target_temperature > 30) target_temperature = 30;
+				if (target_temperature < 5) {
+					target_temperature = 5;
+				}
+				if (target_temperature > 30) {
+					target_temperature = 30;
+				}
 				target_temperature = roundHalf(target_temperature);
 				setThermostatTemperature(device, target_temperature, callback);
 				self.realtime(device, 'target_temperature', target_temperature);
@@ -43,7 +55,9 @@ var self = module.exports = {
 		measure_temperature: {
 			get: function(device, callback) {
 				getThermostatInfo(device, function(err, info) {
-					callback(err, info.temperature2);
+					if(info !== undefined && info.temperature2 !== undefined) {
+						callback(err, info.temperature2);
+					}
 				});
 			}
 		}
@@ -71,33 +85,33 @@ var self = module.exports = {
 				// On return
 			}, function(err, response, body) {
 				// If an error has occurred
-				if (err) return socket.emit('error', 'error');
+				if (err || body === undefined) {
+					return socket.emit('error', 'error');
+				}
 				// Checking credentials
 				Homey.log('ICY E-Thermostaat username/password are being checked');
 				// If status is 401 - Not authorized
-				if (body.status.code == 401) {
+				if (body.status !== undefined && body.status.code !== undefined && body.status.code === 401) {
 					// Send log
 					Homey.log('ICY E-Thermostaat username/password are wrong');
 					// Return error
 					socket.emit('error', 'notauthorized');
-					return;
-				}
-				// If status is 200 - Ok
-				if (body.status.code == 200) {
+
+				} else if (body.status !== undefined && body.status.code !== undefined && body.status.code === 200) {
+					// If status is 200 - Ok
 					// Send log
 					Homey.log('ICY E-Thermostaat username/password are correct');
 					// Set thermostat serial
 					tempSerialthermostat = body.serialthermostat1;
 					// Credentials work, continue
 					socket.emit('continue', null);
-					return;
 					// Anything else should give error
 				} else {
 					Homey.log('ICY E-Thermostaat username/password could not be checked');
 					// Return error
 					socket.emit('error', 'notauthorized');
-					return;
 				}
+				return;
 			});
 		});
 		socket.on('list_devices', function(data, callback) {
@@ -112,21 +126,24 @@ var self = module.exports = {
 			callback(null, devices);
 		});
 		socket.on('disconnect', function(data, callback) {
-			console.log('disconnect!!!', arguments)
+			Homey.log('disconnect!!!', arguments);
 		});
 	}
-}
+};
+
 var thermostatInfoCache = {
 	updated_at: new Date("January 1, 1970"),
 	data: {}
 };
 
 function getThermostatInfo(device, force, callback) {
-	if (typeof force == 'function') callback = force;
+	if (typeof force === 'function') {
+		callback = force;
+	}
 	// Send log
 	Homey.log('ICY E-Thermostaat checking data');
 	// Check if cache is within time range
-	if (!force && ((new Date) - thermostatInfoCache.updated_at) < 120000) {
+	if (!force && ((new Date()) - thermostatInfoCache.updated_at) < 120000) {
 		// Cache is younger then 2 minutes, serve cache instead of live data.
 		callback(thermostatInfoCache.data);
 	} else {
@@ -144,7 +161,9 @@ function getThermostatInfo(device, force, callback) {
 					},
 					json: true
 				}, function(err, response, body) {
-					if (err) return callback(err);
+					if (err) {
+						return callback(err);
+					}
 					// Update cache data
 					thermostatInfoCache.updated_at = new Date();
 					thermostatInfoCache.data = body;
@@ -175,7 +194,9 @@ function setThermostatTemperature(device, temperature, callback) {
 				},
 				json: true
 			}, function(err, response, body) {
-				if (err) return callback(err);
+				if (err) {
+					return callback(err);
+				}
 				// update thermosmart info
 				getThermostatInfo(device, true, callback);
 			});
@@ -193,10 +214,12 @@ function getToken(device, callback) {
 		},
 		json: true
 	}, function(err, response, body) {
-		if (err) return callback(err);
+		if (err) {
+			return callback(err);
+		}
 		if (body.status !== undefined && body.status !== null && body.status.code !== undefined && body.status.code !== null) {
 			// If status is 200 - Ok
-			if (body.status.code == 200) {
+			if (body.status.code === 200) {
 				module.exports.setAvailable(device);
 				// Send log
 				Homey.log('ICY E-Thermostaat username/password are correct, returning token.');
