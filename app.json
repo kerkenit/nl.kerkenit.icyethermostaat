@@ -1,6 +1,6 @@
 {
 	"id": "homey.icyethermostaat",
-	"version": "0.6.0",
+	"version": "1.0.0",
 	"compatibility": "*",
 	"name": {
 		"en": "ICY E-Thermostaat",
@@ -18,37 +18,226 @@
 		"large": "assets/images/large.jpg",
 		"small": "assets/images/small.jpg"
 	},
-	"drivers": [
-		{
-			"id": "thermostat",
-			"name": {
-				"en": "ICY E-Thermostat",
-				"nl": "ICY E-Thermostaat"
+	"capabilities": {
+		"icythermostat_mode": {
+			"type": "enum",
+			"title": {
+				"en": "Thermostat mode",
+				"nl": "Thermostaat modus"
 			},
-			"class": "thermostat",
-			"capabilities": [ "target_temperature", "measure_temperature" ],
-			"images": {
-				"large": "drivers/thermostat/assets/images/large.png",
-				"small": "drivers/thermostat/assets/images/small.png"
+			"desc": {
+				"en": "Mode of the thermostat",
+				"nl": "Modus van de thermostaat"
 			},
-			"pair": [
-				{
-					"id": "start"
-				},
-				{
-					"id": "list_devices",
-					"template": "list_devices",
-					"navigation": {
-						"next": "add_stations"
-					}
-				},
-				{
-					"id": "add_stations",
-					"template": "add_devices"
+			"values": [{
+				"id": "comfort",
+				"title": {
+					"en": "Comfort Mode",
+					"nl": "Comfortstand"
 				}
-			]
+			}, {
+				"id": "saving",
+				"title": {
+					"en": "Saving mode",
+					"nl": "Bespaarstand"
+				}
+			}, {
+				"id": "away",
+				"title": {
+					"en": "Long-away-mode",
+					"nl": "Lang-weg-stand"
+				}
+			}, {
+				"id": "fixed",
+				"title": {
+					"en": "Fixed Temperature",
+					"nl": "Vaste Temperatuur"
+				}
+			}],
+			"getable": true,
+			"setable": true
 		}
-	],
+	},
+	"drivers": [{
+		"id": "thermostat",
+		"name": {
+			"en": "ICY E-Thermostat",
+			"nl": "ICY E-Thermostaat"
+		},
+		"class": "thermostat",
+		"capabilities": ["target_temperature", "measure_temperature", "icythermostat_mode"],
+		"capabilitiesOptions": {
+			"target_temperature": {
+				"min": 5,
+				"max": 30,
+				"step": 0.5
+			}
+		},
+		"mobile": {
+			"components": [{
+				"id": "icon",
+				"capabilities": []
+			}, {
+				"id": "sensor",
+				"capabilities": ["measure_temperature"]
+			}, {
+				"id": "picker",
+				"capabilities": ["icythermostat_mode"]
+			}, {
+				"id": "thermostat",
+				"capabilities": ["target_temperature"]
+			}]
+		},
+		"images": {
+			"large": "drivers/thermostat/assets/images/large.png",
+			"small": "drivers/thermostat/assets/images/small.png"
+		},
+		"pair": [{
+			"id": "start"
+		}, {
+			"id": "list_devices",
+			"template": "list_devices",
+			"navigation": {
+				"next": "add_stations"
+			}
+		}, {
+			"id": "add_stations",
+			"template": "add_devices"
+		}]
+	}],
+	"flow": {
+		"triggers": [{
+			"id": "mode",
+			"title": {
+				"en": "Mode is changed",
+				"nl": "Modus is gewijzigd"
+			},
+			"args": [{
+				"name": "device",
+				"type": "device",
+				"filter": "driver_id=thermostat"
+			}]
+		}, {
+			"id": "mode_changed",
+			"title": {
+				"en": "Mode is changed in",
+				"nl": "Modus is gewijzigd in"
+			},
+			"args": [{
+				"name": "mode",
+				"type": "dropdown",
+				"values": [{
+					"id": "comfort",
+					"label": {
+						"en": "Comfort Mode",
+						"nl": "Comfortstand"
+					}
+				}, {
+					"id": "saving",
+					"label": {
+						"en": "Saving mode",
+						"nl": "Bespaarstand"
+					}
+				}, {
+					"id": "away",
+					"label": {
+						"en": "Long-away-mode",
+						"nl": "Lang-weg-stand"
+					}
+				}, {
+					"id": "fixed",
+					"label": {
+						"en": "Fixed Temperature",
+						"nl": "Vaste Temperatuur"
+					}
+				}]
+			}, {
+				"name": "device",
+				"type": "device",
+				"filter": "driver_id=thermostat"
+			}]
+		}],
+		"conditions": [{
+			"id": "mode",
+			"title": {
+				"en": "Mode !{{is|isn't}}",
+				"nl": "Modus !{{is|is niet}}"
+			},
+			"args": [{
+				"name": "mode",
+				"type": "dropdown",
+				"values": [{
+					"id": "comfort",
+					"label": {
+						"en": "Comfort Mode",
+						"nl": "Comfortstand"
+					}
+				}, {
+					"id": "saving",
+					"label": {
+						"en": "Saving mode",
+						"nl": "Bespaarstand"
+					}
+				}, {
+					"id": "away",
+					"label": {
+						"en": "Long-away-mode",
+						"nl": "Lang-weg-stand"
+					}
+				}, {
+					"id": "fixed",
+					"label": {
+						"en": "Fixed Temperature",
+						"nl": "Vaste Temperatuur"
+					}
+				}]
+			}, {
+				"name": "device",
+				"type": "device",
+				"filter": "driver_id=thermostat"
+			}]
+		}],
+		"actions": [{
+			"id": "mode",
+			"title": {
+				"en": "Set mode to",
+				"nl": "Stel modus in op"
+			},
+			"args": [{
+				"name": "mode",
+				"type": "dropdown",
+				"values": [{
+					"id": "comfort",
+					"label": {
+						"en": "Comfort Mode",
+						"nl": "Comfortstand"
+					}
+				}, {
+					"id": "saving",
+					"label": {
+						"en": "Saving mode",
+						"nl": "Bespaarstand"
+					}
+				}, {
+					"id": "away",
+					"label": {
+						"en": "Long-away-mode",
+						"nl": "Lang-weg-stand"
+					}
+				}, {
+					"id": "fixed",
+					"label": {
+						"en": "Fixed Temperature",
+						"nl": "Vaste Temperatuur"
+					}
+				}]
+			}, {
+				"name": "device",
+				"type": "device",
+				"filter": "driver_id=thermostat"
+			}]
+		}]
+	},
 	"dependencies": {
 		"request": "*",
 		"extend": "*"

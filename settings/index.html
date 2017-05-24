@@ -1,0 +1,104 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+
+    <title>I.C.Y. Thermostat App</title>
+    <link rel="stylesheet" type="text/css" href="css/stylesheet-min.css">
+    <link rel="stylesheet" type="text/css" href="css/device-mockups2.min.css">
+    <script type="text/javascript" src="js/jquery-1.7.1.min.js">
+</script>
+
+    <script type="text/javascript" src="js/app.js">
+</script>
+    <style type="text/css">
+        * {
+                -webkit-box-sizing: border-box; -moz-box-sizing: border-box; -ms-box-sizing:border-box; box-sizing: border-box;
+                padding: 0;
+                margin: 0;
+            }
+
+            html, body {
+                width: 100%;
+                width: 100%;
+                position: relative;
+            }
+
+            html {
+                background-image: -webkit-radial-gradient(center center, circle cover, #ffffff, #cfcfcf 100%);
+                background-image:    -moz-radial-gradient(center center, circle cover, #ffffff, #cfcfcf 100%);
+                background-image:     -ms-radial-gradient(center center, circle cover, #ffffff, #cfcfcf 100%);
+                background-image:      -o-radial-gradient(center center, circle cover, #ffffff, #cfcfcf 100%);
+                background-image:         radial-gradient(center center, circle cover, #ffffff, #cfcfcf 100%);
+            }
+
+            body {
+                margin: 0 auto;
+                max-width: 400px;
+            }
+
+            h1 {
+                line-height: 200%;
+                margin: 30px auto;
+                text-align: center;
+                font-family: sans-serif;
+                font-weight: 100;
+            }
+    </style>
+</head>
+
+<body>
+    <div class="device-mockup iphone6 portrait white" data-device="iphone6">
+        <div class="device">
+            <div class="screen">
+					<!-- Thermostat -->
+
+                <div id="thermostat" data-role="page" data-theme="z">
+
+                    <div data-role="content">
+                        <div id="thermostat-wrap">
+                            <img id="thermostatImage" src="images/thermostat.png">
+
+                            <div id="plus" class="temp-btn"></div>
+
+                            <div id="minus" class="temp-btn"></div>
+
+                            <div id="temp">
+                                <div id="current">
+                                <p id="current-temp" class="thermostat-temp">10</p>
+
+                                <p id="current-temp-precision" class="thermostat-temp thermostat-temp-precision komma-visible">,5</p><img src="images/icons/degree.png" class="degree"></div>
+
+                                <div id="spacer"><img id="thermostat-spacer" src="images/icons/comfort.png"> <img id="thermostat-arrow" src="images/icons/arrow.png"> <img id="thermostat-clock" src="images/icons/clock.png"></div>
+
+                                <div id="set">
+                                <p id="set-temp" class="thermostat-temp">10</p>
+
+                                <p id="set-temp-precision" class="thermostat-temp thermostat-temp-precision komma-visible">,5</p><img src="images/icons/degree.png" class="degree"></div>
+                            </div>
+                        </div>
+
+                        <div id="mode">
+                            <ul>
+                                <li id="thermostat-1"><img src="images/icons/comfort-icon.png"></li>
+
+                                <li id="thermostat-2"><img src="images/icons/rust-icon.png"></li>
+
+                                <li id="thermostat-0"><img src="images/icons/antivorst-icon.png"></li>
+
+                                <li id="thermostat-5"><img src="images/icons/vt-icon.png"></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><script type="text/javascript">
+	    function onHomeyReady(){
+            Homey.ready();
+        onDeviceReady();
+        }
+    </script>
+</body>
+</html>
