@@ -772,7 +772,7 @@ function onDeviceReady() {
 				return (visibility == 'visible') ? 'hidden' : 'visible';
 			});
 		} else {
-			return this.css('visibility', visibility ? 'hidden' : 'visible');
+			return this.css('visibility', visibility ? 'visible': 'hidden');
 		}
 	};
 	// Menu button binding
