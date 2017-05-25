@@ -113,6 +113,75 @@ SwitchTimeList.prototype = {
 		}
 	}
 };
+
+/*
+ *  SwitchTime class
+ */
+var SwitchTime = function(conTime, conDay) {
+		// Reserve pageHeight
+		var pageHeight = 0;
+		var day = 0;
+		var state = 0;
+		var hour = 0;
+		var minute = 0;
+		if (arguments.length === 1) {
+			var temp = (conTime & 0x3FFF);
+			day = Math.floor(temp / 1440);
+			temp = temp % 1440;
+			state = conTime >> 14;
+			hour = Math.floor(temp / 60);
+			minute = temp % 60;
+		} else {
+			day = conDay;
+		}
+		// Setters & Getters
+		this.setPageHeight = function(val) {
+			pageHeight = val;
+		};
+		this.getPageHeight = function() {
+			return pageHeight;
+		};
+		this.setState = function(val) {
+			state = val;
+		};
+		this.getState = function() {
+			return state;
+		};
+		this.setDay = function(val) {
+			day = val;
+		};
+		this.getDay = function() {
+			return day;
+		};
+		this.setHour = function(val) {
+			hour = val;
+		};
+		this.getHour = function() {
+			return hour;
+		};
+		this.setMinute = function(val) {
+			minute = val;
+		};
+		this.getMinute = function() {
+			return minute;
+		};
+	};
+SwitchTime.prototype = {
+	// get the total minute
+	getTotalMinute: function() {
+		return (this.getHour() * 60) + this.getMinute();
+	},
+	// Returns the E-Thermostaat switch time from the current object
+	createTime: function() {
+		var returnTime = 0;
+		returnTime = this.getState() << 14;
+		returnTime += this.getDay() * 1440;
+		returnTime += this.getHour() * 60;
+		returnTime += this.getMinute();
+		return returnTime;
+	}
+};
+
 // Thermostat settings
 var controlSettings = 0;
 var nodeSettings = 0;
@@ -167,9 +236,25 @@ var self = module.exports = {
 			Homey.manager('flow').on('trigger.mode', function(callback, args) {
 				callback(null, true); // If true, this flow should run. The callback is (err, result)-style.
 			});
+			Homey.manager('flow').on('trigger.heatingDemand', function(callback, args) {
+				callback(null, true); // If true, this flow should run. The callback is (err, result)-style.
+			});
+			Homey.manager('flow').on('trigger.clockActivated', function(callback, args) {
+				callback(null, true); // If true, this flow should run. The callback is (err, result)-style.
+			});
 			Homey.manager('flow').on('condition.mode', function(callback, args) {
-				getThermostatInfo(device, function(err, data) {
+				getThermostatInfo(args.device, function(err, data) {
 					callback(err, currentThermostatMode === args.mode);
+				});
+			});
+			Homey.manager('flow').on('condition.heatingDemand', function(callback, args) {
+				getThermostatInfo(args.device, function(err, data) {
+					callback(err, heatingDemand);
+				});
+			});
+			Homey.manager('flow').on('condition.clockActivated', function(callback, args) {
+				getThermostatInfo(args.device, function(err, data) {
+					callback(err, clockActivated);
 				});
 			});
 			Homey.manager('flow').on('action.mode', function(callback, args) {
@@ -314,48 +399,50 @@ function icyData(data) {
 		}
 		weekClock = tempArray;
 		// Parse configurationuration thermostat mode
-		controlSettings = data.configuration[0];
-		var thermostatMode = (controlSettings >> 5) & 0x07;
-		currentSelectedMode = thermostatMode;
-		heatingDemand = (controlSettings >> 2) & 0x01;
-		// Clock activated
-		clockActivated = (controlSettings >> 4) & 0x01;
-		// Node Settings
-		nodeSettings = data.configuration[1];
-		var automatischInschakelen = (nodeSettings >> 7) & 0x01;
-		// Antivorst temp
-		if ((data.configuration[4] % 2) > 0) {
-			antivorstTemp = (data.configuration[4] >> 1) + 0.5;
-		} else {
-			antivorstTemp = (data.configuration[4] >> 1);
+		if (data.configuration !== undefined) {
+			controlSettings = data.configuration[0];
+			var thermostatMode = (controlSettings >> 5) & 0x07;
+			currentSelectedMode = thermostatMode;
+			heatingDemand = (controlSettings >> 2) & 0x01;
+			// Clock activated
+			clockActivated = (controlSettings >> 4) & 0x01;
+			// Node Settings
+			nodeSettings = data.configuration[1];
+			var automatischInschakelen = (nodeSettings >> 7) & 0x01;
+			// Antivorst temp
+			if ((data.configuration[4] % 2) > 0) {
+				antivorstTemp = (data.configuration[4] >> 1) + 0.5;
+			} else {
+				antivorstTemp = (data.configuration[4] >> 1);
+			}
+			// Rust temp
+			if ((data.configuration[5] % 2) > 0) {
+				rustTemp = (data.configuration[5] >> 1) + 0.5;
+			} else {
+				rustTemp = (data.configuration[5] >> 1);
+			}
+			// Rust period
+			rustPeriod = data.configuration[2];
+			// Comfort temp
+			if ((data.configuration[6] % 2) > 0) {
+				comfortTemp = (data.configuration[6] >> 1) + 0.5;
+			} else {
+				comfortTemp = (data.configuration[6] >> 1);
+			}
+			// Comfort period
+			comfortPeriod = data.configuration[3] * 10;
+			// Maximum temp
+			if ((data.configuration[7] % 2) > 0) {
+				maxTemp = (data.configuration[7] >> 1) + 0.5;
+			} else {
+				maxTemp = (data.configuration[7] >> 1);
+			}
+			comfortShorttime = data.configuration[8];
+			lightsensorProfile = data.configuration[9];
+			heatingProfile = data.configuration[10];
+			thermostatColor = data.configuration[11];
+			currentThermostatMode = getThermostatMode(currentSelectedMode);
 		}
-		// Rust temp
-		if ((data.configuration[5] % 2) > 0) {
-			rustTemp = (data.configuration[5] >> 1) + 0.5;
-		} else {
-			rustTemp = (data.configuration[5] >> 1);
-		}
-		// Rust period
-		rustPeriod = data.configuration[2];
-		// Comfort temp
-		if ((data.configuration[6] % 2) > 0) {
-			comfortTemp = (data.configuration[6] >> 1) + 0.5;
-		} else {
-			comfortTemp = (data.configuration[6] >> 1);
-		}
-		// Comfort period
-		comfortPeriod = data.configuration[3] * 10;
-		// Maximum temp
-		if ((data.configuration[7] % 2) > 0) {
-			maxTemp = (data.configuration[7] >> 1) + 0.5;
-		} else {
-			maxTemp = (data.configuration[7] >> 1);
-		}
-		comfortShorttime = data.configuration[8];
-		lightsensorProfile = data.configuration[9];
-		heatingProfile = data.configuration[10];
-		thermostatColor = data.configuration[11];
-		currentThermostatMode = getThermostatMode(currentSelectedMode);
 	}
 }
 
@@ -400,6 +487,17 @@ function checkForChangeMode(device_data) {
 		}
 		previousThermostatMode = currentThermostatMode;
 	}
+
+	Homey.manager('flow').triggerDevice('clockActivated', {
+		'active': clockActivated
+	}, null, device_data, function(err, result) {
+		if (err) return Homey.error(err);
+	});
+	Homey.manager('flow').triggerDevice('heatingDemand', {
+		'active': heatingDemand
+	}, null, device_data, function(err, result) {
+		if (err) return Homey.error(err);
+	});
 }
 
 function getThermostatMode(mode) {
@@ -474,41 +572,13 @@ function getThermostatInfo(device, force, callback) {
 					icyData(data);
 					self.realtime(device, 'measure_temperature', currentTemp);
 					self.realtime(device, 'icythermostat_mode', currentThermostatMode);
-
 					checkForChangeMode(device);
-
 					// Return new data
 					callback(null, thermostatInfoCache.data);
 				});
 			}
 		});
 	}
-}
-
-function setThermostatTemperature(device, temperature, callback) {
-	// Send log
-	Homey.log('ICY E-Thermostaat sending new temperature');
-	// Get token
-	getToken(device, function(token) {
-		if (token !== false) {
-			request.post(api_url + '/data', {
-				form: {
-					'uid': device.id,
-					'temperature1': temperature
-				},
-				headers: {
-					'Session-token': token
-				},
-				json: true
-			}, function(err, response, body) {
-				if (err) {
-					return callback(err);
-				}
-				// update thermosmart info
-				getThermostatInfo(device, true, callback);
-			});
-		}
-	});
 }
 
 function getToken(device, callback) {
