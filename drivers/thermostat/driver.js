@@ -258,8 +258,8 @@ var self = module.exports = {
 				});
 			});
 			Homey.manager('flow').on('action.mode', function(callback, args) {
-				module.exports.realtime(args.device, "icythermostat_mode", args.mode);
-				callback(null, true);
+				currentSelectedMode = setThermostatMode(args.mode);
+				sendData(args.device, callback);
 			});
 			if (!first_device) {
 				first_device = true;
@@ -468,7 +468,10 @@ function sendData(device, callback) {
 				self.realtime(device, 'target_temperature', setTemp);
 				self.realtime(device, 'icythermostat_mode', currentThermostatMode);
 				checkForChangeMode(device);
+				callback(null, true);
 			});
+		} else {
+			callback('token invalid', false);
 		}
 	});
 }
