@@ -1,6 +1,6 @@
 {
 	"id": "homey.icyethermostaat",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"compatibility": "*",
 	"name": {
 		"en": "ICY E-Thermostaat",
@@ -11,8 +11,30 @@
 		"nl": "De ICY E-Thermostaat"
 	},
 	"author": {
-		"name": "Joey Hiemstra"
+		"name": "Marco van 't Klooster"
 	},
+	"contributors": {
+		"developers": [{
+			"name": "Joey Hiemstra",
+			"email": "joey.hiemstra@outlook.com",
+			"website": "https://joeyhiemstra.nl"
+		},{
+			"name": "Marco van 't Klooster",
+			"email": "info@marcovantklooster.nl",
+			"website": "https://www.marcovantklooster.nl"
+		}]
+	},
+	"contributing": {
+        "donate": {
+            "paypal": {
+                "username": "kerkenit"
+            }
+        }
+	},
+	"athomForumDiscussionId": 785,
+	"bugs": {
+        "url": "https://github.com/kerkenit/nl.marcovantklooster.icyethermostaat/issues"
+    },
 	"category": "climate",
 	"images": {
 		"large": "assets/images/large.jpg",
